@@ -40,7 +40,7 @@ def run(delaytime):
     GPIO.output(IN3, GPIO.HIGH)
     GPIO.output(IN4, GPIO.LOW)
     pwm_ENA.ChangeDutyCycle(50)
-    pwm_ENB.ChangeDutyCycle(50)
+    pwm_ENB.ChangeDutyCycle(50)     
     time.sleep(delaytime)
 
 #back
