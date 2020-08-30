@@ -1,5 +1,5 @@
-class parkingControl:
-
+class parkingContorl:
+    
     def __init__(self,car,parkginLot):
         self.car = car 
         self.parkingLot = parkginLot
@@ -11,3 +11,5 @@ class parkingControl:
         target_pos_x = abs(self.car.position.x-self.env.k1.x)+min_r
         #MoveTo(target_pox_x)
         #Park
+        #ParkEnd
+
