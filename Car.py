@@ -14,6 +14,8 @@ class Car:
         self.parkingMode = parkingControl(self,env)
 
 
+
+        self.start_pos_x = 0
         self.env = env
         self.curMode= None
 
@@ -29,6 +31,24 @@ class Car:
     def leveling(self):
         '''needs development'''
         pass
+
+    def move_x(self,speed,target_x):
+        '''특정 속도로 x축 주행'''
+        while self.position.x<target_x:
+            #move X
+            pass
+
+    def steer(self,angle):
+        ''''서보 모터 각도 조절'''
+        pass
+
+    def stop(self):
+        pass
+
+    def drive(self,speed,condition):
+        '''특정 조건까지 일정속도로 주행'''
+        while condition():
+            pass
 
     def dc_ratio(self,radius:float,width:float)->float:
         return radius/(radius+width)
