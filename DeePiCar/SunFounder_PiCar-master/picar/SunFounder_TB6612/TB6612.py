@@ -46,7 +46,6 @@ class Motor(object):
 	def _debug_(self,message):
 		if self._DEBUG :
 			print(self._DEBUG_INFO,message)
-
 	@property
 	def speed(self):
 		return self._speed

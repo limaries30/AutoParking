@@ -1,6 +1,6 @@
 import math
-from ParkingLot import ParkingLot
-import parkingControl from ParkingControl
+from parkingLot import ParkingLot
+from parkingControl import ParkingControl
 
 class Car:
 
@@ -12,8 +12,6 @@ class Car:
         self.front_overhang = 5
         self.rear_overhang = 5
         self.parkingMode = parkingControl(self,env)
-
-
 
         self.start_pos_x = 0
         self.env = env
@@ -49,6 +47,9 @@ class Car:
         '''특정 조건까지 일정속도로 주행'''
         while condition():
             pass
+
+    def park(self):
+        self.parkingMode.StartParking()
 
     def dc_ratio(self,radius:float,width:float)->float:
         return radius/(radius+width)
