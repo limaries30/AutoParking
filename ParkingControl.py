@@ -3,6 +3,7 @@ import math
 class parkingContorl:
     
     def __init__(self,car,parkginLot):
+        
         self.car = car 
         self.parkingLot = parkginLot
 
