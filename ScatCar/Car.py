@@ -1,6 +1,9 @@
 import math
-from parkingLot import ParkingLot
-from parkingControl import ParkingControl
+import config
+from ParkingLot import parkingLot
+from ParkingControl import parkingControl
+
+print(config.wheelConfig)
 
 class Car:
 

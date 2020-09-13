@@ -1,6 +1,6 @@
 import math
 
-class parkingContorl:
+class parkingControl:
     
     def __init__(self,car,parkginLot):
         
