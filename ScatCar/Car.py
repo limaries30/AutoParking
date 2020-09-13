@@ -3,11 +3,9 @@ import config
 from ParkingLot import parkingLot
 from ParkingControl import parkingControl
 
-print(config.wheelConfig)
-
 class Car:
 
-    def __init__(self,env,parkingControl):
+    def __init__(self,config,env,parkingControl):
         
         self.width = 10
         self.height = 30
@@ -17,6 +15,7 @@ class Car:
         self.parkingMode = parkingControl(self,env)
 
         self.start_pos_x = 0
+        self.config = config
         self.env = env
         self.curMode= None
 
@@ -56,3 +55,12 @@ class Car:
 
     def dc_ratio(self,radius:float,width:float)->float:
         return radius/(radius+width)
+
+
+def unitTest():
+    car = Car(config,parkingLot,parkingControl)
+    print(car.config.WHEEL)
+
+
+
+unitTest()
