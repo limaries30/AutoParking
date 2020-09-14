@@ -34,3 +34,7 @@ class DCMotor(Motor):
 class ServoMotor(Motor):
     def __init__(self):
         pass
+
+
+def test():
+    pass

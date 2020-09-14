@@ -13,7 +13,7 @@ class BackWheels:
         motorRight= motor
         
 
-def unitTest():
+def test():
     frontWheels = FrontWheels(ServoMotor)
     backWheels = BackWheels(DCMotor)
 
