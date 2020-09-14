@@ -23,8 +23,6 @@ class Motor:
             raise ValueError('speed ranges fron 0 to 100, not "{0}"'.format(speed))
         '''SetUp PWM'''
         
-        
-
 
 class DCMotor(Motor):
     def __init__(self):

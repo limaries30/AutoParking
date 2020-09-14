@@ -52,11 +52,11 @@ class LaneDetector:
         return houghResult
 
 def test():
-
+    print("lane detector test")
     img_files = path.Path('./data').glob('*')
     num_imgs = len(img_files)
     print("Total %d imgs"%num_imgs)
-    
+
     imgs = list(map(lambda x:cv2.imread(str(x), cv2.COLOR_RGB2GRAY),img_files))
     laneDetector = LaneDetector()
     for idx,img in enumerate(imgs):

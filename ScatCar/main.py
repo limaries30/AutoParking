@@ -1,5 +1,5 @@
 from Car import Car
-from parkingLot import ParkingLot
+from env.parkingLot import ParkingLot
 from parkingControl import ParkingControl
 
 

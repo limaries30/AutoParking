@@ -57,10 +57,10 @@ class Car:
         return radius/(radius+width)
 
 
-def unitTest():
+def test():
     car = Car(config,parkingLot,parkingControl)
     print(car.config.WHEEL)
 
 
 
-unitTest()
+test()
