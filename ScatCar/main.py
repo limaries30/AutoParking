@@ -1,6 +1,6 @@
 from Car import Car
-from env.parkingLot import ParkingLot
-from parkingControl import ParkingControl
+from env.ParkingLot import ParkingLot
+from algorithms.ParkingControl import ParkingControl
 
 
 

@@ -1,7 +1,7 @@
 import math
 import config
-from ParkingLot import parkingLot
-from ParkingControl import parkingControl
+from env.ParkingLot import ParkingLot
+from algorithms.ParkingControl import ParkingControl
 
 class Car:
 
@@ -58,7 +58,7 @@ class Car:
 
 
 def test():
-    car = Car(config,parkingLot,parkingControl)
+    car = Car(config,ParkingLot,ParkingControl)
     print(car.config.WHEEL)
 
 

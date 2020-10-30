@@ -4,8 +4,10 @@ import numpy as np
 
 class LaneDetector:
     
-    def __init__(self):
-        pass
+    def __init__(self,config):
+        device = config.device #torch.device('cpu')
+        self.ps_detect =PsDetect(opt.MODEL_DEF, opt.WEIGHTS_PATH_YOLO, opt.IMG_SIZE, device)
+        self.vps_classifier = vpsClassify(opt.WEIGHTS_PATH_VPS, device)
 
     def gaussian_blur(self,img:np.array, kernel_size:int): # 가우시안 필터
         return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)

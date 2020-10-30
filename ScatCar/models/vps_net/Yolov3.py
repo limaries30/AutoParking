@@ -11,8 +11,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
-from utils.parse_config import *
-from utils.utils import build_targets, to_cpu
+from .utils.vpsnet_parse_config import *
+from .utils.vpsnet_utils import build_targets, to_cpu
 
 
 
