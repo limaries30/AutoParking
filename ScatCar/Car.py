@@ -2,6 +2,7 @@ import math
 import config
 from env.ParkingLot import ParkingLot
 from algorithms.ParkingControl import ParkingControl
+from algorithms.LaneDetector import LaneDetector
 
 class Car:
 
@@ -17,6 +18,8 @@ class Car:
         self.start_pos_x = 0
         self.config = config
         self.env = env
+
+        self.laneDetector = LaneDetector(config.VPS_NET)
         self.curMode= None
 
     @property

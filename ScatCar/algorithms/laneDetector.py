@@ -1,13 +1,17 @@
 import cv2
 import path
 import numpy as np
+import torch
+from models.vps_net import vps_classify,ps_detect
 
 class LaneDetector:
     
     def __init__(self,config):
-        device = config.device #torch.device('cpu')
-        self.ps_detect =PsDetect(opt.MODEL_DEF, opt.WEIGHTS_PATH_YOLO, opt.IMG_SIZE, device)
-        self.vps_classifier = vpsClassify(opt.WEIGHTS_PATH_VPS, device)
+
+        device= torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        self.config = config
+        self.ps_detect =ps_detect.PsDetect(config['MODEL_DEF'], config['WEIGHTS_PATH_YOLO'], config['IMG_SIZE'], device)
+        self.vps_classifier = vps_classify.vpsClassify(config['WEIGHTS_PATH_VPS'], device)
 
     def gaussian_blur(self,img:np.array, kernel_size:int): # 가우시안 필터
         return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
