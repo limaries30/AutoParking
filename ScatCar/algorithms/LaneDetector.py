@@ -7,8 +7,8 @@ from models.vps_net.utils.vpsnet_utils import compute_four_points
 from models.vps_net import vps_classify, ps_detect
 import config
 
-class LaneDetector:
 
+class LaneDetector:
     def __init__(self, config):
 
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -60,13 +60,9 @@ class LaneDetector:
 
         if img.shape[0] != 600:
             img = cv2.resize(img, (600, 600))
-<<<<<<< HEAD
         detections = self.ps_detect.detect_ps(
             img, self.config["CONF_THRES"], self.config["NMS_THRES"]
         )
-=======
-        detections = self.ps_detect.detect_ps(img, self.config['CONF_THRES'], self.config['NMS_THRES'])
->>>>>>> 01234488d7a3ee083f804284f7231c5135cb58c1
         if len(detections) != 0:
             for detection in detections:
                 point1 = detection[0]
@@ -82,11 +78,7 @@ class LaneDetector:
     def detectLines(self, img):
 
         height, width = img.shape[:2]  # 이미지 높이, 너비
-<<<<<<< HEAD
-        blur_img = self.gaussian_blur(img, 3)
-=======
         blur_img = self.gaussian_blur(img, 3)  # Blur 효과
->>>>>>> 01234488d7a3ee083f804284f7231c5135cb58c1
         canny_img = self.cannyEdge_img(blur_img, 70, 210)
 
         vertices = np.array(
