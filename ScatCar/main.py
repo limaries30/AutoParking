@@ -1,10 +1,11 @@
 from Car import Car
-from parkingLot import ParkingLot
-from parkingControl import ParkingControl
+import config
+from env.ParkingLot import ParkingLot
+from algorithms.ParkingControl import ParkingControl
 
 
 
 if __name__ =="__main__":
     
-    car = Car()
+    car = Car(config,ParkingLot,ParkingControl)
     car.start()

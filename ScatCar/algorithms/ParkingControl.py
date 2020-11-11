@@ -1,6 +1,7 @@
 import math
+from models.vps_net import vps_classify,ps_detect
 
-class parkingControl:
+class ParkingControl:
     
     def __init__(self,car,parkginLot):
         
