@@ -19,7 +19,7 @@ class Car:
         self.config = config
         self.env = env
 
-        self.laneDetector = LaneDetector(config.VPS_NET)
+        self.laneDetector = LaneDetector(config.CONTEXT_RECOGNIZER_NET)
         self.curMode= None
 
     @property

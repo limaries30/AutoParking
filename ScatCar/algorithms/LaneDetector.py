@@ -1,22 +1,17 @@
 import cv2
 import path
 import numpy as np
-import torch
 import copy
-from models.vps_net.utils.vpsnet_utils import compute_four_points
-from models.vps_net import vps_classify, ps_detect
+from models.context_based.parking_context_recognizer.train import get_model
 import config
 
 
 class LaneDetector:
+
     def __init__(self, config):
 
-        device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         self.config = config
-        self.ps_detect = ps_detect.PsDetect(
-            config["MODEL_DEF"], config["WEIGHTS_PATH_YOLO"], config["IMG_SIZE"], device
-        )
-        self.vps_classifier = vps_classify.vpsClassify(config["WEIGHTS_PATH_VPS"], device)
+        self.parking_context_recognizer = get_model()
 
     def gaussian_blur(self, img: np.array, kernel_size: int):  # 가우시안 필터
         return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
@@ -56,24 +51,19 @@ class LaneDetector:
 
         return ROI_image
 
-    def detectParkingLot(self, img):
+    def detect_parkingLot_context(self,img):
 
-        if img.shape[0] != 600:
-            img = cv2.resize(img, (600, 600))
-        detections = self.ps_detect.detect_ps(
-            img, self.config["CONF_THRES"], self.config["NMS_THRES"]
-        )
-        if len(detections) != 0:
-            for detection in detections:
-                point1 = detection[0]
-                point2 = detection[1]
-                angle = detection[2]
-                pts = compute_four_points(angle, point1, point2)
-                point3_org = copy.copy(pts[2])
-                point4_org = copy.copy(pts[3])
-                label_vacant = vps_classify.vps_classify(img, pts)
+        img = cv2.resize(img, (self.config['IMG_WIDTH'],self.config['IMG_HEIGHT']))
+        img = img[np.newaxis,:]
+        #img = img[:self.config['IMG_HEIGHT'],:self.config['IMG_WIDTH']]
+        result  = self.parking_context_recognizer.predict(img)
 
-        print(detections)
+        type_predict, angle_predict = result[0],result[1]
+        
+        print('type_predict',type_predict)
+        print('angle_predict',angle_predict)        
+        return result
+        
 
     def detectLines(self, img):
 
@@ -107,20 +97,22 @@ def test():
     print("Total %d imgs" % num_imgs)
 
     imgs = list(map(lambda x: cv2.imread(str(x), cv2.COLOR_RGB2GRAY), img_files))
-    laneDetector = LaneDetector(config.VPS_NET)
+    laneDetector = LaneDetector(config.CONTEXT_RECOGNIZER_NET)
 
     for idx, img in enumerate(imgs):
-        parkingLot = laneDetector.detectParkingLot(img)
-        print(parkingLot)
+        #parkingLot = laneDetector.defParkingLot_context(img)
+        # img = cv2.resize(img,(64,192))
+        # img = img[np.newaxis,:]
+        # model = get_model(img)
+        result = laneDetector.detect_parkingLot_context(img)
+        print(result)
 
-    for idx, img in enumerate(imgs):
-        lines = laneDetector.detectLines(img)
-        if lines is None:
-            lines = np.array([])
-        print("%d/%d: %d lines " % (idx, num_imgs, lines.shape[0]))
+    #low level edge detection test
+    # for idx, img in enumerate(imgs):
+    #     lines = laneDetector.detectLines(img)
+    #     if lines is None:
+    #         lines = np.array([])
+    #     print("%d/%d: %d lines " % (idx, num_imgs, lines.shape[0]))
 
 
 test()
-
-if __name__ == "__main__":
-    test()
