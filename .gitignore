@@ -6,3 +6,5 @@ __pycache__/
 *$py.class
 .vscode/
 Scatcar/weights/
+ScatCar/models/context_based/weight_pcr/
+ScatCar/models/context_based/weight_psd/

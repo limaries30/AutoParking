@@ -1,5 +1,4 @@
 import math
-from models.vps_net import vps_classify,ps_detect
 
 class ParkingControl:
     
