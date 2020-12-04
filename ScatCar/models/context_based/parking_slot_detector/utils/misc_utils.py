@@ -33,6 +33,7 @@ def parse_anchors(anchor_path):
     parse anchors.
     returned data: shape [N, 2], dtype float32
     '''
+    print('anchor_path',anchor_path)
     anchors = np.reshape(np.asarray(open(anchor_path, 'r').read().split(','), np.float32), [-1, 2])
     return anchors
 

@@ -7,3 +7,4 @@ PREFETECH_BUFFER = 5
 THRESHOLD_OBJ = 0.3
 THRESHOLD_NMS = 0.1
 THRESHOLD_SCORE = 0.1
+WEIGHT_PATH = "models/context_based/weight_psd/fine_tuned_type_0"

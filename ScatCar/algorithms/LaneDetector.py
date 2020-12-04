@@ -3,6 +3,7 @@ import path
 import numpy as np
 import copy
 from models.context_based.parking_context_recognizer.train import get_model
+from models.context_based.parking_slot_detector import models
 import config
 
 
