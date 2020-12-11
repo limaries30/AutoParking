@@ -9,7 +9,7 @@ import math
 
 slim = tf.contrib.slim
 
-from utils.layer_utils import conv2d, darknet53_body, yolo_block, upsample_layer
+from .utils.layer_utils import conv2d, darknet53_body, yolo_block, upsample_layer
 
 
 class yolov3(object):
@@ -157,9 +157,7 @@ class yolov3(object):
             ],
             -2,
         )
-        print("angle", angle)
-        print("rot_mat", rot_mat)
-        print("quad1", quad1)
+
         quad1 = tf.einsum("njk,nwhij->nwhik", rot_mat, quad1)
         quad2 = tf.einsum("njk,nwhij->nwhik", rot_mat, quad2)
         quad3 = tf.einsum("njk,nwhij->nwhik", rot_mat, quad3)

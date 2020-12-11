@@ -2,17 +2,16 @@ import cv2
 import path
 import numpy as np
 import copy
+import tensorflow as tf
 from models.context_based.parking_context_recognizer.train import get_model
-from models.context_based.parking_slot_detector import models
+from models.context_based.parking_slot_detector.psd_detect import detect_slot
 import config
 
 
 class LaneDetector:
-
     def __init__(self, config):
 
         self.config = config
-        self.parking_context_recognizer = get_model()
 
     def gaussian_blur(self, img: np.array, kernel_size: int):  # 가우시안 필터
         return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
@@ -52,21 +51,26 @@ class LaneDetector:
 
         return ROI_image
 
-    def detect_parkingLot_context(self,img):
+    def detect_position(self, img):
+        return detect_slot(image=img)
 
-        img = cv2.resize(img, (self.config['IMG_WIDTH'],self.config['IMG_HEIGHT']))
-        img = img[np.newaxis,:]
-        #img = img[:self.config['IMG_HEIGHT'],:self.config['IMG_WIDTH']]
-        result  = self.parking_context_recognizer.predict(img)
+    def detect_type(self, img):
 
-        type_predict, angle_predict = result[0],result[1]
-        
-        print('type_predict',type_predict)
-        print('angle_predict',angle_predict)        
+        parking_context_recognizer = get_model()
+
+        img = cv2.resize(img, (self.config["IMG_WIDTH"], self.config["IMG_HEIGHT"]))
+        img = img[np.newaxis, :]
+        result = parking_context_recognizer.predict(img)
+
+        type_predict, angle_predict = result[0], result[1]
+        tf.keras.backend.clear_session()
+
         return result
-        
 
-    def detectLines(self, img):
+    def slot_detect(self, img):
+        detect_slot()
+
+    def detect_houghLines(self, img):
 
         height, width = img.shape[:2]  # 이미지 높이, 너비
         blur_img = self.gaussian_blur(img, 3)  # Blur 효과
@@ -101,19 +105,12 @@ def test():
     laneDetector = LaneDetector(config.CONTEXT_RECOGNIZER_NET)
 
     for idx, img in enumerate(imgs):
-        #parkingLot = laneDetector.defParkingLot_context(img)
-        # img = cv2.resize(img,(64,192))
-        # img = img[np.newaxis,:]
-        # model = get_model(img)
-        result = laneDetector.detect_parkingLot_context(img)
-        print(result)
-
-    #low level edge detection test
-    # for idx, img in enumerate(imgs):
-    #     lines = laneDetector.detectLines(img)
-    #     if lines is None:
-    #         lines = np.array([])
-    #     print("%d/%d: %d lines " % (idx, num_imgs, lines.shape[0]))
+        type_result = laneDetector.detect_type(img)
+        print("type_result", type_result)
+        result, sess = laneDetector.detect_position(img)
+        print("position result", result)
+        sess.close()
+        tf.reset_default_graph()
 
 
 test()
