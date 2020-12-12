@@ -17,4 +17,4 @@ Fisheye camera distortion correction based on opencv's chessboard calibration al
 
 3. Run 'image_correction.py' to correct a single image captured by the camera.
 
-4. Run 'video_correction.py' to correct the camera in real time.
+(option 4. Run 'video_correction.py' to correct the camera in real time.)
