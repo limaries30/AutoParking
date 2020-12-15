@@ -21,7 +21,8 @@ if __name__ == '__main__':
 
     img = cv2.imread('./fisheye_camera_undistortion/distort.jpg')
     img = correct(img, k=K, d=D, dims=Dims)
-    cv2.imshow('', img)
+    img_resize = cv2.resize(img, dsize=(0, 0), fx=0.2, fy=0.2, interpolation=cv2.INTER_LINEAR)
+    cv2.imshow('', img_resize)
     cv2.waitKey(0)
-    cv2.imwrite('./fisheye_camera_undistortion/undistorted.jpg', img)
+    cv2.imwrite('./fisheye_camera_undistortion/undistorted.jpg', img_resize)
     cv2.destroyAllWindows()
