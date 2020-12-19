@@ -1,9 +1,14 @@
+#fisheye calibration
+#get fisheye calibration parameters
+#input: chessboardsize, chessboardimages
+#output: parameters(K, D, Dims)
+
 import numpy as np
 import cv2
 import os
 
 
-CHESSBOARD_SIZE = (6, 9)
+CHESSBOARD_SIZE = (6, 9) # from image, 10 X 7...
 
 
 def calibrate(chessboard_path, show_chessboard=False):
