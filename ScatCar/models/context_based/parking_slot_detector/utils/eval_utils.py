@@ -6,10 +6,8 @@ import numpy as np
 from collections import Counter
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
-from matplotlib import pyplot
-
-from parking_slot_detector.utils.nms_utils import cpu_nms
-from parking_slot_detector.utils.data_utils import parse_line, parse_result_line
+from .nms_utils import cpu_nms
+from .data_utils import parse_line, parse_result_line
 
 
 def calc_iou(pred_boxes, true_boxes):
@@ -18,7 +16,7 @@ def calc_iou(pred_boxes, true_boxes):
 
     intersect_mins = np.maximum(pred_boxes[..., :2], true_boxes[..., :2])
     intersect_maxs = np.minimum(pred_boxes[..., 2:], true_boxes[..., 2:])
-    intersect_wh = np.maximum(intersect_maxs - intersect_mins, 0.)
+    intersect_wh = np.maximum(intersect_maxs - intersect_mins, 0.0)
 
     intersect_area = intersect_wh[..., 0] * intersect_wh[..., 1]
     pred_box_wh = pred_boxes[..., 2:] - pred_boxes[..., :2]
@@ -31,11 +29,21 @@ def calc_iou(pred_boxes, true_boxes):
     return iou
 
 
-def evaluate_on_gpu(sess, gpu_nms_op, pred_quads_flag, pred_scores_flag, y_pred, y_true, num_classes, iou_thresh=0.5, calc_now=True):
-    '''
+def evaluate_on_gpu(
+    sess,
+    gpu_nms_op,
+    pred_quads_flag,
+    pred_scores_flag,
+    y_pred,
+    y_true,
+    num_classes,
+    iou_thresh=0.5,
+    calc_now=True,
+):
+    """
     Given y_pred and y_true of a batch of data, get the recall and precision of the current batch.
     This function will perform gpu operation on the GPU.
-    '''
+    """
 
     num_images = y_true[0].shape[0]
     true_labels_dict = {i: 0 for i in range(num_classes)}  # {class: count}
@@ -46,7 +54,7 @@ def evaluate_on_gpu(sess, gpu_nms_op, pred_quads_flag, pred_scores_flag, y_pred,
         true_labels_list, true_boxes_list = [], []
         for j in range(3):  # three feature maps
             # shape: [13, 13, 3, 80]
-            true_probs_temp = y_true[j][i][..., 5:5+num_classes]
+            true_probs_temp = y_true[j][i][..., 5 : 5 + num_classes]
             # shape: [13, 13, 3, 4] (x_center, y_center, w, h)
             true_boxes_temp = y_true[j][i][..., 0:4]
 
@@ -67,27 +75,28 @@ def evaluate_on_gpu(sess, gpu_nms_op, pred_quads_flag, pred_scores_flag, y_pred,
             for cls, count in Counter(true_labels_list).items():
                 true_labels_dict[cls] += count
 
-        # [V, 4] (xmin, ymin, xmax, ymax)
+            # [V, 4] (xmin, ymin, xmax, ymax)
             true_boxes = np.array(true_boxes_list)
             box_centers, box_sizes = true_boxes[:, 0:2], true_boxes[:, 2:4]
-            true_boxes[:, 0:2] = box_centers - box_sizes / 2.
+            true_boxes[:, 0:2] = box_centers - box_sizes / 2.0
             true_boxes[:, 2:4] = true_boxes[:, 0:2] + box_sizes
         else:
             continue
 
         # [1, xxx, 4]
         # pred_boxes = y_pred[0][i:i + 1]
-        pred_confs = y_pred[0][i:i + 1]
-        pred_probs = y_pred[1][i:i + 1]
-        pred_quads = y_pred[2][i:i + 1]
+        pred_confs = y_pred[0][i : i + 1]
+        pred_probs = y_pred[1][i : i + 1]
+        pred_quads = y_pred[2][i : i + 1]
 
         # pred_boxes: [N, 4]
         # pred_confs: [N]
         # pred_labels: [N]
         # N: Detected box number of the current image
-        pred_boxes, pred_confs, pred_labels, pred_quads = sess.run(gpu_nms_op,
-                                                       feed_dict={pred_quads_flag: pred_quads,
-                                                                  pred_scores_flag: pred_confs * pred_probs})
+        pred_boxes, pred_confs, pred_labels, pred_quads = sess.run(
+            gpu_nms_op,
+            feed_dict={pred_quads_flag: pred_quads, pred_scores_flag: pred_confs * pred_probs},
+        )
         # len: N
         pred_labels_list = [] if pred_labels is None else pred_labels.tolist()
         if pred_labels_list == []:
@@ -104,7 +113,10 @@ def evaluate_on_gpu(sess, gpu_nms_op, pred_quads_flag, pred_scores_flag, y_pred,
         for k in range(max_iou_idx.shape[0]):
             pred_labels_dict[pred_labels_list[k]] += 1
             match_idx = max_iou_idx[k]  # V level
-            if iou_matrix[k, match_idx] > iou_thresh and true_labels_list[match_idx] == pred_labels_list[k]:
+            if (
+                iou_matrix[k, match_idx] > iou_thresh
+                and true_labels_list[match_idx] == pred_labels_list[k]
+            ):
                 if match_idx not in correct_idx:
                     correct_idx.append(match_idx)
                     correct_conf.append(pred_confs[k])
@@ -130,25 +142,27 @@ def evaluate_on_gpu(sess, gpu_nms_op, pred_quads_flag, pred_scores_flag, y_pred,
 
 
 def get_preds_gpu(sess, gpu_nms_op, pred_quads_flag, pred_scores_flag, image_ids, y_pred):
-    '''
+    """
     Given the y_pred of an input image, get the predicted bbox and label info.
     return:
         pred_content: 2d list.
-    '''
+    """
     image_id = image_ids[0]
 
     # keep the first dimension 1
     # pred_boxes = y_pred[0][0:1]
-    pred_confs = y_pred[0][0:1]
-    pred_probs = y_pred[1][0:1]
-    pred_quads = y_pred[2][0:1]
+
+    pred_confs = y_pred[0][0][0:1]
+    pred_probs = y_pred[0][1][0:1]
+    pred_quads = y_pred[0][2][0:1]
 
     # print(pred_confs, pred_probs, pred_quads)
     # print(len(pred_quads))
 
-    boxes, scores, labels, quads = sess.run(gpu_nms_op,
-                                     feed_dict={pred_quads_flag: pred_quads,
-                                                pred_scores_flag: pred_confs * pred_probs})
+    boxes, scores, labels, quads = sess.run(
+        gpu_nms_op,
+        feed_dict={pred_quads_flag: pred_quads, pred_scores_flag: pred_confs * pred_probs},
+    )
 
     # print(len(boxes))
     # print(boxes)
@@ -165,20 +179,31 @@ def get_preds_gpu(sess, gpu_nms_op, pred_quads_flag, pred_scores_flag, image_ids
 
 
 gt_dict = {}  # key: img_id, value: gt object list
+
+
 def parse_gt_rec(gt_filename, target_img_size, letterbox_resize=True):
-    '''
+    """
     parse and re-organize the gt info.
     return:
         gt_dict: dict. Each key is a img_id, the value is the gt bboxes in the corresponding img.
-    '''
+    """
 
     global gt_dict
 
     if not gt_dict:
         new_width, new_height = target_img_size
-        with open(gt_filename, 'r') as f:
+        with open(gt_filename, "r") as f:
             for line in f:
-                img_id, pic_path, boxes, labels, ori_width, ori_height, quads, img_angle = parse_line(line)
+                (
+                    img_id,
+                    pic_path,
+                    boxes,
+                    labels,
+                    ori_width,
+                    ori_height,
+                    quads,
+                    img_angle,
+                ) = parse_line(line)
 
                 objects = []
                 for i in range(len(labels)):
@@ -194,17 +219,25 @@ def parse_gt_rec(gt_filename, target_img_size, letterbox_resize=True):
                         dw = int((new_width - resize_w) / 2)
                         dh = int((new_height - resize_h) / 2)
 
-                        objects.append([x_min * resize_ratio + dw,
-                                        y_min * resize_ratio + dh,
-                                        x_max * resize_ratio + dw,
-                                        y_max * resize_ratio + dh,
-                                        label])
+                        objects.append(
+                            [
+                                x_min * resize_ratio + dw,
+                                y_min * resize_ratio + dh,
+                                x_max * resize_ratio + dw,
+                                y_max * resize_ratio + dh,
+                                label,
+                            ]
+                        )
                     else:
-                        objects.append([x_min * new_width / ori_width,
-                                        y_min * new_height / ori_height,
-                                        x_max * new_width / ori_width,
-                                        y_max * new_height / ori_height,
-                                        label])
+                        objects.append(
+                            [
+                                x_min * new_width / ori_width,
+                                y_min * new_height / ori_height,
+                                x_max * new_width / ori_width,
+                                y_max * new_height / ori_height,
+                                label,
+                            ]
+                        )
                 gt_dict[img_id] = objects
     return gt_dict
 
@@ -217,18 +250,18 @@ def voc_ap(rec, prec, use_07_metric=False):
     """
     if use_07_metric:
         # 11 point metric
-        ap = 0.
-        for t in np.arange(0., 1.1, 0.1):
+        ap = 0.0
+        for t in np.arange(0.0, 1.1, 0.1):
             if np.sum(rec >= t) == 0:
                 p = 0
             else:
                 p = np.max(prec[rec >= t])
-            ap = ap + p / 11.
+            ap = ap + p / 11.0
     else:
         # correct AP calculation
         # first append sentinel values at the end
-        mrec = np.concatenate(([0.], rec, [1.]))
-        mpre = np.concatenate(([0.], prec, [0.]))
+        mrec = np.concatenate(([0.0], rec, [1.0]))
+        mpre = np.concatenate(([0.0], prec, [0.0]))
         # print("mrec", mrec)
         # print("mpre", mpre)
 
@@ -251,6 +284,7 @@ def voc_ap(rec, prec, use_07_metric=False):
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
+
 
 #
 # def voc_eval(gt_dict, val_preds, classidx, iou_thres=0.5, use_07_metric=False):
@@ -335,20 +369,30 @@ def voc_ap(rec, prec, use_07_metric=False):
 #     # return rec, prec, ap
 #     return npos, nd, tp[-1] / float(npos), tp[-1] / float(nd), ap
 
+
 def parse_gt_quadrangle(gt_filename, target_img_size, letterbox_resize=True):
-    '''
+    """
     parse and re-organize the gt info.
     return:
         gt_dict: dict. Each key is a img_id, the value is the gt bboxes in the corresponding img.
-    '''
+    """
 
     global gt_dict
 
     if not gt_dict:
         new_width, new_height = target_img_size
-        with open(gt_filename, 'r') as f:
+        with open(gt_filename, "r") as f:
             for line in f:
-                img_id, pic_path, boxes, labels, ori_width, ori_height, quads, img_angle = parse_line(line)
+                (
+                    img_id,
+                    pic_path,
+                    boxes,
+                    labels,
+                    ori_width,
+                    ori_height,
+                    quads,
+                    img_angle,
+                ) = parse_line(line)
 
                 objects = []
                 for i in range(len(labels)):
@@ -366,25 +410,33 @@ def parse_gt_quadrangle(gt_filename, target_img_size, letterbox_resize=True):
                         dw = int((new_width - resize_w) / 2)
                         dh = int((new_height - resize_h) / 2)
 
-                        objects.append([quads[i][0] * resize_ratio + dw,
-                                        quads[i][1] * resize_ratio + dh,
-                                        quads[i][2] * resize_ratio + dw,
-                                        quads[i][3] * resize_ratio + dh,
-                                        quads[i][4] * resize_ratio + dw,
-                                        quads[i][5] * resize_ratio + dh,
-                                        quads[i][6] * resize_ratio + dw,
-                                        quads[i][7] * resize_ratio + dh,
-                                        label])
+                        objects.append(
+                            [
+                                quads[i][0] * resize_ratio + dw,
+                                quads[i][1] * resize_ratio + dh,
+                                quads[i][2] * resize_ratio + dw,
+                                quads[i][3] * resize_ratio + dh,
+                                quads[i][4] * resize_ratio + dw,
+                                quads[i][5] * resize_ratio + dh,
+                                quads[i][6] * resize_ratio + dw,
+                                quads[i][7] * resize_ratio + dh,
+                                label,
+                            ]
+                        )
                     else:
-                        objects.append([quads[i][0] * new_width / ori_width,
-                                        quads[i][1] * new_height / ori_height,
-                                        quads[i][2] * new_width / ori_width,
-                                        quads[i][3] * new_height / ori_height,
-                                        quads[i][4] * new_width / ori_width,
-                                        quads[i][5] * new_height / ori_height,
-                                        quads[i][6] * new_width / ori_width,
-                                        quads[i][7] * new_height / ori_height,
-                                        label])
+                        objects.append(
+                            [
+                                quads[i][0] * new_width / ori_width,
+                                quads[i][1] * new_height / ori_height,
+                                quads[i][2] * new_width / ori_width,
+                                quads[i][3] * new_height / ori_height,
+                                quads[i][4] * new_width / ori_width,
+                                quads[i][5] * new_height / ori_height,
+                                quads[i][6] * new_width / ori_width,
+                                quads[i][7] * new_height / ori_height,
+                                label,
+                            ]
+                        )
                 gt_dict[img_id] = objects
     return gt_dict
 
@@ -399,12 +451,13 @@ def line_intersection(line1, line2):
     div = det(xdiff, ydiff)
     if div == 0:
         return -1
-       # raise Exception('lines do not intersect')
+    # raise Exception('lines do not intersect')
 
     d = (det(*line1), det(*line2))
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
     return x, y
+
 
 def check_in_line_segment(point, line):
     if point[0] < min(line[0][0], line[1][0]):
@@ -418,7 +471,8 @@ def check_in_line_segment(point, line):
     else:
         return True
 
-def calc_park_score(predict, gts, need_list = False):
+
+def calc_park_score(predict, gts, need_list=False):
     # print("predict", predict)
     points = [predict[0:2], predict[2:4], predict[4:6], predict[6:8]]
     center = np.average(points, axis=0)
@@ -430,18 +484,21 @@ def calc_park_score(predict, gts, need_list = False):
         rescale_score = 1
 
         if not gt_polygon.contains(Point(center)):
-            score_list.append(0.)
+            score_list.append(0.0)
             continue
 
         for x, y in points:
             point = Point((x, y))
             if not gt_polygon.contains(point):
                 for i in range(-1, 3):
-                    intersection = line_intersection((center, (x, y)), (gt_points[i], gt_points[i + 1]))
+                    intersection = line_intersection(
+                        (center, (x, y)), (gt_points[i], gt_points[i + 1])
+                    )
                     if intersection == -1:
                         continue
-                    if check_in_line_segment(intersection, (center, (x, y))) and check_in_line_segment(intersection, (
-                    gt_points[i], gt_points[i + 1])):
+                    if check_in_line_segment(
+                        intersection, (center, (x, y))
+                    ) and check_in_line_segment(intersection, (gt_points[i], gt_points[i + 1])):
                         rescale = (intersection[0] - center[0]) / (x - center[0])
                         if rescale_score > rescale:
                             rescale_score = rescale
@@ -459,14 +516,15 @@ def calc_park_score(predict, gts, need_list = False):
         else:
             return score_list
     elif len(score_list) == 0:
-        return 0.
+        return 0.0
     else:
         return max(score_list)
 
+
 def park_eval(gt_dict, val_preds, classidx, conf_thres=0.01, score_thres=0.5, use_07_metric=False):
-    '''
+    """
     Top level function that does the PASCAL VOC evaluation.
-    '''
+    """
 
     # # Use type in predicted txt
     # f = open("E:/parking_space/data_psd_c03_1/type_gt.txt")
@@ -494,7 +552,6 @@ def park_eval(gt_dict, val_preds, classidx, conf_thres=0.01, score_thres=0.5, us
     #             del img_ids[index]
     #             del pred[index]
 
-
     # 1.obtain gt: extract all gt objects for this class
     class_recs = {}
     npos = 0
@@ -504,7 +561,7 @@ def park_eval(gt_dict, val_preds, classidx, conf_thres=0.01, score_thres=0.5, us
         quad = [x[:8] for x in R]
         det = [False] * len(R)
         npos += len(R)
-        class_recs[img_id] = {'det': det, 'quad':quad}
+        class_recs[img_id] = {"det": det, "quad": quad}
 
     # 2. obtain pred results
     # pred = [x for x in val_preds if x[-2] == classidx and x[-3]>conf_thres]
@@ -537,7 +594,12 @@ def park_eval(gt_dict, val_preds, classidx, conf_thres=0.01, score_thres=0.5, us
     #             del img_ids[index]
     #             del pred[index]
 
-    score_list = np.array([calc_park_score(x[-1], class_recs[id]['quad'], need_list=True) for x, id in zip(pred, img_ids)])
+    score_list = np.array(
+        [
+            calc_park_score(x[-1], class_recs[id]["quad"], need_list=True)
+            for x, id in zip(pred, img_ids)
+        ]
+    )
     score = np.array([max(scores) for scores in score_list])
     score_top = np.array([np.argmax(scores) for scores in score_list])
     # print("score_list", len(score_list), score_list)
@@ -555,7 +617,7 @@ def park_eval(gt_dict, val_preds, classidx, conf_thres=0.01, score_thres=0.5, us
         score = score[sorted_ind]
         score_top = score_top[sorted_ind]
     except:
-        print('no box, ignore')
+        print("no box, ignore")
         return 1e-6, 1e-6, 0, 0, 0
     # print("sorted_ind ", len(sorted_ind))
     # print("img_ids ", len(img_ids))
@@ -611,13 +673,13 @@ def park_eval(gt_dict, val_preds, classidx, conf_thres=0.01, score_thres=0.5, us
             # tp[d] = 1.
             # print(R['det'][jmax])
             # gt not matched yet
-            if not R['det'][jmax]:
-                tp[d] = 1.
-                R['det'][jmax] = 1
+            if not R["det"][jmax]:
+                tp[d] = 1.0
+                R["det"][jmax] = 1
             else:
-                fp[d] = 1.
+                fp[d] = 1.0
         else:
-            fp[d] = 1.
+            fp[d] = 1.0
     # print("fp", fp)
     # print("tp", tp)
 
@@ -636,7 +698,7 @@ def park_eval(gt_dict, val_preds, classidx, conf_thres=0.01, score_thres=0.5, us
 
     # return rec, prec, ap
     if len(tp) == 0:
-        return npos, nd, 0., 0., ap
+        return npos, nd, 0.0, 0.0, ap
     return npos, nd, tp[-1] / float(npos), tp[-1] / float(nd), ap
 
 
@@ -660,10 +722,16 @@ def eval_result_file(test_file, result_file, score_th):
     # print_result = []
     # rec_total, prec_total, fscore_total, ap_total = AverageMeter(), AverageMeter(), AverageMeter(), AverageMeter()
     # for thresh in np.arange(0.1, 1.0, 0.1):
-    npos, nd, rec, prec, ap = park_eval(gt_dict, result_list, 0, conf_thres=0.3, score_thres=score_th,
-    # npos, nd, rec, prec, ap = park_eval(gt_dict, result_list, 0, conf_thres=thresh, score_thres=.8,
-                                        use_07_metric=False)
-    print('Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}'.format(rec, prec, ap))
+    npos, nd, rec, prec, ap = park_eval(
+        gt_dict,
+        result_list,
+        0,
+        conf_thres=0.3,
+        score_thres=score_th,
+        # npos, nd, rec, prec, ap = park_eval(gt_dict, result_list, 0, conf_thres=thresh, score_thres=.8,
+        use_07_metric=False,
+    )
+    print("Recall: {:.4f}, Precision: {:.4f}, AP: {:.4f}".format(rec, prec, ap))
     # if rec + prec == 0:
     #     fscore = .0
     # else:
@@ -672,7 +740,6 @@ def eval_result_file(test_file, result_file, score_th):
     # prec_total.update(prec)
     # fscore_total.update(fscore)
     # ap_total.update(ap)
-
 
     # print('Recall: {:.4f}, Precision: {:.4f}, F Score: {:.4f}, AP: {:.4f}'.format(rec_total.average, prec_total.average,
     #                                                                               fscore_total.average,
@@ -698,28 +765,47 @@ def judge_correct_from_files(gt_file, result_file):
     for gt_line, result_line in zip(gt_lines, result_lines):
         gts = []
 
-        s = gt_line.strip().split(' ')
-        s = s[5:] #gt에 angle 포함
-        assert len(s) % 9 == 0, 'Annotation error! Please check your annotation file. Maybe partially missing some coordinates?'
+        s = gt_line.strip().split(" ")
+        s = s[5:]  # gt에 angle 포함
+        assert (
+            len(s) % 9 == 0
+        ), "Annotation error! Please check your annotation file. Maybe partially missing some coordinates?"
         box_cnt = len(s) // 9
         for i in range(box_cnt):
             type = int(s[i * 9])
             if type == 0:
-                gt_box = [float(s[i * 9 + 1]), float(s[i * 9 + 2]), float(
-                s[i * 9 + 3]), float(s[i * 9 + 4]), float(s[i * 9 + 5]), float(s[i * 9 + 6]), float(
-                s[i * 9 + 7]), float(s[i * 9 + 8])]
+                gt_box = [
+                    float(s[i * 9 + 1]),
+                    float(s[i * 9 + 2]),
+                    float(s[i * 9 + 3]),
+                    float(s[i * 9 + 4]),
+                    float(s[i * 9 + 5]),
+                    float(s[i * 9 + 6]),
+                    float(s[i * 9 + 7]),
+                    float(s[i * 9 + 8]),
+                ]
                 gts.append(gt_box)
         scores = np.zeros(len(gts))
 
-        s = result_line.strip().split(' ')
+        s = result_line.strip().split(" ")
         s = s[2:]
-        assert len(s) % 10 == 0, 'Annotation error! Please check your annotation file. Maybe partially missing some coordinates?'
+        assert (
+            len(s) % 10 == 0
+        ), "Annotation error! Please check your annotation file. Maybe partially missing some coordinates?"
         box_cnt = len(s) // 10
         for i in range(box_cnt):
             type = int(s[i * 10])
             if type == 0:
-                predict = [float(s[i * 10 + 2]), float(s[i * 10 + 3]), float(s[i * 10 + 4]), float(s[i * 10 + 5]), float(s[i * 10 + 6]), float(
-                    s[i * 10 + 7]), float(s[i * 10 + 8]), float(s[i * 10 + 9])]
+                predict = [
+                    float(s[i * 10 + 2]),
+                    float(s[i * 10 + 3]),
+                    float(s[i * 10 + 4]),
+                    float(s[i * 10 + 5]),
+                    float(s[i * 10 + 6]),
+                    float(s[i * 10 + 7]),
+                    float(s[i * 10 + 8]),
+                    float(s[i * 10 + 9]),
+                ]
 
                 # print("predict", predict)
                 # print("gts", gts)

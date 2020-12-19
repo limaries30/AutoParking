@@ -153,13 +153,16 @@ def evaluate(test_path, weight_file):
 
     return accuracy, angle_mae
 
+
 def get_model():
+    pass
 
     model_input = (192,64,3) #tf.keras.layers.Input(shape=(192,64,3))
     print(glob.glob("models/context_based/weight_pcr/trained/*"))
     test_model = model(model_input)
     test_model.load_weights(WEIGHT_FILE)
     return test_model
+
 
 def test():
 

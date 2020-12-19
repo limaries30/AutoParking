@@ -12,7 +12,14 @@ VPS_NET = {
 'IMG_SIZE': 416,
 }
 
+
+SLOT_DETECTOR = {
+"WEIGHT_PATH":"models/context_based/weight_psd/fine_tuned_type_0",
+}
+
 CONTEXT_RECOGNIZER_NET = {
 'IMG_HEIGHT':192,
 'IMG_WIDTH':64,
 }
+
+
