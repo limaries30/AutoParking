@@ -11,10 +11,10 @@ import datetime
 ## frontStream = cv2.VideoCapture(0) streaming
 ## backStream = cv2.VideoCapture(1)
 
-frontStream = cv2.VideoCapture("./Around-View-Monitoring-AVM/dataset/front_camera.avi") #Video
-backStream = cv2.VideoCapture("./Around-View-Monitoring-AVM/dataset/back_camera.avi")
-print(frontStream.get(3), frontStream.get(4))
-print(backStream.get(3), backStream.get(4))
+leftStream = cv2.VideoCapture("./Around-View-Monitoring-AVM/dataset/front_camera.avi") #Video
+rightStream = cv2.VideoCapture("./Around-View-Monitoring-AVM/dataset/back_camera.avi")
+# print(leftStream.get(3), leftStream.get(4))
+# print(rightStream.get(3), rightStream.get(4))
 
 avm = avm()
 
@@ -22,17 +22,20 @@ avm = avm()
 # backFrame = cv2.imread("./Around-View-Monitoring-AVM/Rear_View.jpg")
 startTime = datetime.datetime.now()
 while True:
-    isGrabbed, frontFrame = frontStream.read() #video
-    isGrabbed2, backFrame = backStream.read()
+    isGrabbed, leftFrame = leftStream.read() #video
+    isGrabbed2, rightFrame = rightStream.read()
     if not isGrabbed or not isGrabbed2:
         break
 
     # frontFrame = cv2.imread("./Around-View-Monitoring-AVM/dataset/Front_View.jpg") #image
     # backFrame = cv2.imread("./Around-View-Monitoring-AVM/dataset/Rear_View.jpg")
 
-    birdView = avm.runAVM(frontFrame, backFrame)
-    dst = cv2.resize(birdView, dsize=(0, 0), fx=0.3, fy=0.7, interpolation=cv2.INTER_LINEAR)
+    birdView = avm.runAVM(leftFrame, rightFrame)
+    dst = cv2.resize(birdView, dsize=(240, 320), interpolation=cv2.INTER_LINEAR)
     cv2.imshow("dst", dst)
+    print(dst.shape)
+    # cv2.imshow("leftFrame", leftFrame)
+    # cv2.imshow("rightFrame", rightFrame)
     key = cv2.waitKey(1)
     if key == ord('q'):
         break
@@ -43,7 +46,8 @@ endTime = datetime.datetime.now()
 time = (endTime - startTime).total_seconds()
 print ("Approximate elapsed time is %(fps)d: "%{"fps": time})
 
-cap.release() #video
+leftStream.release()
+rightStream.release() #video
 cv2.destroyAllWindows()
 
 
