@@ -36,7 +36,7 @@ def calibrate(chessboard_path, show_chessboard=False):
             print('Image ' + image + ' is valid for calibration')
             if show_chessboard:
                 cv2.drawChessboardCorners(img, CHESSBOARD_SIZE, corners, ret)
-                cv2.imwrite(os.path.join('./fisheye_camera_undistortion/Chessboards_Corners', image), img)
+                cv2.imwrite(os.path.join('fisheye_camera_undistortion/Chessboards_Corners', image), img)
 
     k = np.zeros((3, 3))
     d = np.zeros((4, 1))
@@ -58,12 +58,13 @@ def calibrate(chessboard_path, show_chessboard=False):
 
 
 if __name__ == '__main__':
-    if not os.path.exists('./fisheye_camera_undistortion/parameters'):
-        os.makedirs('./fisheye_camera_undistortion/parameters')
-    if not os.path.exists('./fisheye_camera_undistortion/Chessboards_Corners'):
-        os.makedirs('./fisheye_camera_undistortion/Chessboards_Corners')
+    if not os.path.exists('fisheye_camera_undistortion/parameters'):
+        os.makedirs('fisheye_camera_undistortion/parameters')
+        
+    if not os.path.exists('fisheye_camera_undistortion/Chessboards_Corners'):
+        os.makedirs('fisheye_camera_undistortion/Chessboards_Corners')
 
-    K, D, Dims = calibrate('./fisheye_camera_undistortion/Chessboards', show_chessboard=True)
-    np.save('./fisheye_camera_undistortion/parameters/Dims', np.array(Dims))
-    np.save('./fisheye_camera_undistortion/parameters/K', np.array(K))
-    np.save('./fisheye_camera_undistortion/parameters/D', np.array(D))
+    K, D, Dims = calibrate('fisheye_camera_undistortion/Chessboards', show_chessboard=True)
+    np.save('fisheye_camera_undistortion/parameters/Dims', np.array(Dims))
+    np.save('fisheye_camera_undistortion/parameters/K', np.array(K))
+    np.save('fisheye_camera_undistortion/parameters/D', np.array(D))
