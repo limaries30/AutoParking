@@ -6,6 +6,8 @@ import tensorflow as tf
 from models.context_based.parking_context_recognizer.train import get_model
 from models.context_based.parking_slot_detector.psd_detect import detect_slot
 import config
+from Camera.Undistortion import UndistortFisheye
+from Camera.PerspectiveTransformation import BirdView
 
 
 class LaneDetector:
@@ -97,20 +99,46 @@ class LaneDetector:
 
 def test():
     print("lane detector test")
-    img_files = path.Path("./data").glob("*")
-    num_imgs = len(img_files)
-    print("Total %d imgs" % num_imgs)
 
-    imgs = list(map(lambda x: cv2.imread(str(x), cv2.COLOR_RGB2GRAY), img_files))
-    laneDetector = LaneDetector(config.CONTEXT_RECOGNIZER_NET)
+    #load images
+    leftStream = cv2.VideoCapture(0)
+    leftCamera = UndistortFisheye("left_Camera")
+    leftBird = BirdView()
+    print(leftStream.get(3), leftStream.get(4))
 
-    for idx, img in enumerate(imgs):
-        type_result = laneDetector.detect_type(img)
-        print("type_result", type_result)
-        result, sess = laneDetector.detect_position(img)
-        print("position result", result)
-        sess.close()
-        tf.reset_default_graph()
+    # we can change size of frame to ex) 320X240
+    # ret = cap.set(3,320)
+    # ret = cap.set(4,240)
 
+    # need to designate 4 points
+    leftBird.setDimensions((186, 195), (484, 207), (588, 402), (97, 363)) #fisheyecalibration을 진행한 후인 Undistorted_Front_View.jpg의 4 개의 꼭짓점
 
+    
+    while(True):
+        _, leftFrame = leftStream.read()
+        leftView = leftCamera.undistort(leftFrame)
+        topDown_left = leftBird.transfrom(leftView)
+        gray = cv2.cvtColor(topDown_left, cv2.COLOR_BGR2GRAY)
+        cv2.imshow("Left Bird's Eye View", gray)
+
+        key = cv2.waitKey(1)
+        if key == ord('q'):
+            break
+
+        if key == ord('p'): #pause
+            cv2.waitKey(-1)
+
+        # if key == ord("s"):
+        #     cv2.imwrite("Capture.jpg", gray)
+
+        for idx, img in enumerate(gray):
+            type_result = laneDetector.detect_type(img)
+            print("type_result", type_result)
+            result, sess = laneDetector.detect_position(img)
+            print("position result", result)
+            sess.close()
+            tf.reset_default_graph()
+
+cap.release()
+cv2.destroyAllWindows()
 test()
