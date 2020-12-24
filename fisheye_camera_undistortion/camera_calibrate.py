@@ -58,13 +58,13 @@ def calibrate(chessboard_path, show_chessboard=False):
 
 
 if __name__ == '__main__':
-    if not os.path.exists('fisheye_camera_undistortion/parameters'):
-        os.makedirs('fisheye_camera_undistortion/parameters')
+    if not os.path.exists('parameters'):
+        os.makedirs('parameters')
         
-    if not os.path.exists('fisheye_camera_undistortion/Chessboards_Corners'):
-        os.makedirs('fisheye_camera_undistortion/Chessboards_Corners')
+    if not os.path.exists('Chessboards_Corners'):
+        os.makedirs('Chessboards_Corners')
 
-    K, D, Dims = calibrate('fisheye_camera_undistortion/Chessboards', show_chessboard=True)
-    np.save('fisheye_camera_undistortion/parameters/Dims', np.array(Dims))
-    np.save('fisheye_camera_undistortion/parameters/K', np.array(K))
-    np.save('fisheye_camera_undistortion/parameters/D', np.array(D))
+    K, D, Dims = calibrate('Chessboards', show_chessboard=True)
+    np.save('parameters/Dims', np.array(Dims))
+    np.save('parameters/K', np.array(K))
+    np.save('parameters/D', np.array(D))
