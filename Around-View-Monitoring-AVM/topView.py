@@ -6,37 +6,39 @@
 This code is used to obtain the bird's view of
 a robot with two cameras installed(front and back cameras)
 """
+
 import cv2
 from Camera.Undistortion import UndistortFisheye
-from Camera.PerspectiveTransformation import EagleView
+from Camera.PerspectiveTransformation import BirdView
 
-# frontStream = cv2.VideoCapture("dataset/front_camera.avi")
-# backStream = cv2.VideoCapture("dataset/back_camera.avi")
+leftStream = cv2.VideoCapture(0)
+leftCamera = UndistortFisheye("left_Camera")
+leftBird = BirdView()
 
-frontCamera = UndistortFisheye("Front_Camera")
-backCamera = UndistortFisheye("Back_Camera")
+# need to designate 4 points
+leftBird.setDimensions((186, 195), (484, 207), (588, 402), (97, 363)) #fisheyecalibration을 진행한 후인 Undistorted_Front_View.jpg의 4 개의 꼭짓점
 
-frontEagle = EagleView()
-backEagle = EagleView()
-frontEagle.setDimensions((186, 195), (484, 207), (588, 402), (97, 363)) #fisheyecalibration을 진행한 후인 Undistorted_Front_View.jpg의 4 개의 꼭짓점
-backEagle.setDimensions((171, 240), (469, 240), (603, 452), (52, 441))
 
 while True:
-    # _, frontFrame = frontStream.read()
-    # _, backFrame = backStream.read()
-    frontFrame = cv2.imread("./Around-View-Monitoring-AVM/dataset/Front_View.jpg")
-    backFrame = cv2.imread("./Around-View-Monitoring-AVM/dataset/Rear_View.jpg")
     
-    frontView = frontCamera.undistort(frontFrame)
-    topDown_Front = frontEagle.transfrom(frontView)
-    backView = backCamera.undistort(backFrame)
-    topDown_Back = backEagle.transfrom(backView)
+    _, leftFrame = leftStream.read()
+    leftView = leftCamera.undistort(leftFrame)
+    topDown_left = leftBird.transfrom(leftView)
 
-    cv2.imshow("Front Bird's Eye View", topDown_Front)
-    cv2.imshow("Back Bird's Eye View", topDown_Back)
+    cv2.imshow("Left Bird's Eye View", topDown_left)
 
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("q"):
-        break
+    key = cv2.waitKey(1)
+        if key == ord('q'):
+            break
 
+        if key == ord('p'): #pause
+            cv2.waitKey(-1)
+
+        if key == ord("s"):
+            cv2.imwrite("Capture.jpg", topDown_left)
+    
+        # if key == ord("r"):
+        #     leftCamera.reset()
+
+cap.release()
 cv2.destroyAllWindows()

@@ -5,13 +5,13 @@ import numpy as np
 import cv2
 
 """
-- EagleView finds the top-down view of an image
+- BirdView finds the top-down view of an image
 - First, we cut new rectangle shaped dimensions of the original image
 - Second, we find the distination dimensions of our recatangle in the top-down view coordintaes
 - Third, we find M (Perspective Transform Matrix)
-- Finally, we find the top-down view (bird's eye view)
+- Finally, we find the top-down view (Bird's eye view)
 """
-class EagleView:
+class BirdView:
     def __init__(self):
         self.__topLeft = []
         self.__topRight = []
@@ -36,8 +36,8 @@ class EagleView:
         self.__computeDistinationDimensions()
         self.__computePerspectiveTransformMatrix()
 
-        eagleView = cv2.warpPerspective(image, self.__M, (self.__newWidth, self.__newHeight))
-        return eagleView
+        birdView = cv2.warpPerspective(image, self.__M, (self.__newWidth, self.__newHeight))
+        return birdView
 
     def __computeNewDimensions(self):
         # compute width of new image

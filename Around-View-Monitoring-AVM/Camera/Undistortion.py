@@ -22,7 +22,7 @@ class UndistortFisheye:
 
         regexVariable = r"(\w*)"
         regexValue = r"[-+]?\d*\.\d+|\d+"
-        file = open("C:\\Users\\한건희\\Desktop\\pythonworkspace\\Around-View-Monitoring-AVM\\Parameters\\K_D_Values_" + cameraName + ".txt", "r")
+        file = open("Around-View-Monitoring-AVM\Parameters\K_D_Values_" + cameraName + ".txt", "r")
         lines = file.readlines()
         for line in lines:
             variable = re.findall(regexVariable, line)
