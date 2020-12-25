@@ -7,8 +7,6 @@ from models.context_based.parking_context_recognizer.train import get_model
 from models.context_based.parking_slot_detector.psd_detect import detect_slot
 import config
 
-np.random.seed(1)
-tf.set_random_seed(0)
 
 
 class LaneDetector:

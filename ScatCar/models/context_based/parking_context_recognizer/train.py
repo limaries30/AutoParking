@@ -6,9 +6,6 @@ import os
 import numpy as np
 import tensorflow as tf
 
-np.random.seed(1)
-tf.set_random_seed(0)
-
 
 from .config import WEIGHT_FILE
 from .utils import *

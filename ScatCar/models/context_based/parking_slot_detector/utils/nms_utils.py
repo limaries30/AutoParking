@@ -7,10 +7,6 @@ import tensorflow as tf
 import math
 
 
-tf.set_random_seed(0)
-np.random.seed(1)
-
-
 def rot_nms(filter_score, filter_quads, max_boxes, nms_thresh):
     max_score_idx = tf.argmax(filter_score)
     best_quad = filter_quads[max_score_idx]

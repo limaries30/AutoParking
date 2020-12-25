@@ -5,9 +5,6 @@ from __future__ import division, print_function
 import numpy as np
 import tensorflow as tf
 
-tf.set_random_seed(0)
-np.random.seed(1)
-
 slim = tf.contrib.slim
 
 
