@@ -6,6 +6,9 @@ import os
 import numpy as np
 import tensorflow as tf
 
+np.random.seed(1)
+tf.set_random_seed(0)
+
 
 from .config import WEIGHT_FILE
 from .utils import *
@@ -155,7 +158,7 @@ def evaluate(test_path, weight_file):
 
 
 def get_model():
-    model_input = (192,64,3) #tf.keras.layers.Input(shape=(192,64,3))
+    model_input = (192, 64, 3)  # tf.keras.layers.Input(shape=(192,64,3))
     print(glob.glob("models/context_based/weight_pcr/trained/*"))
     test_model = model(model_input)
     test_model.load_weights(WEIGHT_FILE)
