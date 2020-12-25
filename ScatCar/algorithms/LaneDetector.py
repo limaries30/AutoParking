@@ -51,24 +51,35 @@ class LaneDetector:
 
         return ROI_image
 
-    def detect_position(self, img):
-        return detect_slot(image=img)
-
     def detect_type(self, img):
 
         parking_context_recognizer = get_model()
 
-        img = cv2.resize(img, (self.config["IMG_WIDTH"], self.config["IMG_HEIGHT"]))
+        img = cv2.resize(
+            img,
+            (
+                self.config.CONTEXT_RECOGNIZER_NET["IMG_WIDTH"],
+                self.config.CONTEXT_RECOGNIZER_NET["IMG_HEIGHT"],
+            ),
+        )
         img = img[np.newaxis, :]
-        result = parking_context_recognizer.predict(img)
+        img = tf.image.per_image_standardization(img)
+        result = parking_context_recognizer.predict(img, steps=1)
 
-        type_predict, angle_predict = result[0], result[1]
+        type_predict, angle_predict = result
         tf.keras.backend.clear_session()
 
-        return result
+        type_predict = np.argmax(type_predict, axis=1)
+        angle_predict = angle_predict * 180.0 - 90.0
 
-    def slot_detect(self, img):
-        detect_slot()
+        return type_predict, angle_predict
+
+    def slot_detect(self, result, img):
+        img = img / 255
+        type_predict, angle_predict = result
+        weight_path = "models/context_based/weight_psd/fine_tuned_type_" + str(type_predict[0])
+        result, sess = detect_slot(angle_predict[0], weight_path, img)
+        return result, sess
 
     def detect_houghLines(self, img):
 
@@ -89,7 +100,6 @@ class LaneDetector:
         )
 
         ROI_img = self.region_of_interest(canny_img, vertices)  # ROI 설정
-
         houghResult = self.houghLines(ROI_img, 1, 1 * np.pi / 180, 30, 10, 20)
 
         return houghResult
@@ -102,13 +112,14 @@ def test():
     print("Total %d imgs" % num_imgs)
 
     imgs = list(map(lambda x: cv2.imread(str(x), cv2.COLOR_RGB2GRAY), img_files))
-    laneDetector = LaneDetector(config.CONTEXT_RECOGNIZER_NET)
+    laneDetector = LaneDetector(config)
 
     for idx, img in enumerate(imgs):
         type_result = laneDetector.detect_type(img)
-        print("type_result", type_result)
-        result, sess = laneDetector.detect_position(img)
-        print("position result", result)
+        if type_result[0][0] == 3:
+            print("no parking lot")
+            continue
+        result, sess = laneDetector.slot_detect(type_result, img)
         sess.close()
         tf.reset_default_graph()
 

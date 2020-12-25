@@ -155,8 +155,6 @@ def evaluate(test_path, weight_file):
 
 
 def get_model():
-    pass
-
     model_input = (192,64,3) #tf.keras.layers.Input(shape=(192,64,3))
     print(glob.glob("models/context_based/weight_pcr/trained/*"))
     test_model = model(model_input)
@@ -166,8 +164,6 @@ def get_model():
 
 def test():
 
-    # tfrecord_files = glob.glob(os.path.join(test_path, "tfrecord/") + "*.tfrecord")
-    # image, type, angle = create_dataset(tfrecord_files, is_test=True)
     img_input = tf.keras.Input((192, 64, 3))
     model_input = tf.keras.layers.Input(tensor=img_input)
 

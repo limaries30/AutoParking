@@ -18,6 +18,7 @@ from .model import yolov3
 
 
 def detect_slot(
+    angle,
     weight_path="models/context_based/weight_psd/fine_tuned_type_0",
     image=None,
 ):
@@ -57,7 +58,7 @@ def detect_slot(
         apply_rotate=True,
     )
 
-    image_angle = tf.dtypes.cast([0], tf.float32)
+    image_angle = tf.dtypes.cast(angle, tf.float32)
 
     y_pred = yolo_model.predict(pred_feature_maps, image_angle)
 
