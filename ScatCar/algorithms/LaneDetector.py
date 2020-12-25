@@ -120,6 +120,7 @@ def test():
             print("no parking lot")
             continue
         result, sess = laneDetector.slot_detect(type_result, img)
+        print(idx, "번째:", result)
         sess.close()
         tf.reset_default_graph()
 
