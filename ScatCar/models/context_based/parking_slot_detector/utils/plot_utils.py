@@ -6,6 +6,8 @@ import cv2
 import random
 import numpy as np
 
+np.random.seed(1)
+
 
 def get_color_table(class_num, seed=100):
     random.seed(seed)

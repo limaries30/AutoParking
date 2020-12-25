@@ -8,6 +8,8 @@ import sys
 import random
 import math
 
+np.random.seed(1)
+
 DATA_LEN = 14
 
 

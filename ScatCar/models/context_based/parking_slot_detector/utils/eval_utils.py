@@ -3,6 +3,7 @@
 from __future__ import division, print_function
 
 import numpy as np
+np.random.seed(1)
 from collections import Counter
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
