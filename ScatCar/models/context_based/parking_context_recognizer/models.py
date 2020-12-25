@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+tf.set_random_seed(0)
+
 
 def model_mobilenetv2(input_tensor, train_lambda=0.1):
     model_input = tf.keras.layers.Input(shape=input_tensor)
