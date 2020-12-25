@@ -5,6 +5,9 @@ import logging
 logging.getLogger("tensorflow").disabled = True
 
 import tensorflow as tf
+
+tf.set_random_seed(0)
+
 import time
 
 from .config import *
