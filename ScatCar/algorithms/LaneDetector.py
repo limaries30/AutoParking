@@ -7,6 +7,8 @@ from models.context_based.parking_context_recognizer.train import get_model
 from models.context_based.parking_slot_detector.psd_detect import detect_slot
 import config
 
+tf.set_random_seed(0)
+
 
 class LaneDetector:
     def __init__(self, config):
@@ -117,7 +119,7 @@ def test():
     for idx, img in enumerate(imgs):
         type_result = laneDetector.detect_type(img)
         if type_result[0][0] == 3:
-            print("no parking lot")
+            print(idx, " th : no parking lot")
             continue
         result, sess = laneDetector.slot_detect(type_result, img)
         print(idx, "번째:", result)
