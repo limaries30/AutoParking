@@ -13,7 +13,7 @@ import numpy as np
 np.random.seed(1)
 import tensorflow as tf
 
-tf.random.set_seed(1)
+tf.set_random_seed(0)
 
 from Car import Car
 import config
