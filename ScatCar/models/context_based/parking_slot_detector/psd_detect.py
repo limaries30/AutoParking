@@ -6,7 +6,6 @@ logging.getLogger("tensorflow").disabled = True
 
 import tensorflow as tf
 
-tf.set_random_seed(0)
 
 import time
 
@@ -14,6 +13,9 @@ from .config import *
 from .utils.misc_utils import parse_anchors
 import cv2
 import numpy as np
+
+tf.set_random_seed(0)
+np.random.seed(1)
 
 from .utils.eval_utils import get_preds_gpu
 from .utils.nms_utils import gpu_nms

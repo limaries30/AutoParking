@@ -6,6 +6,11 @@ import numpy as np
 import tensorflow as tf
 import math
 
+
+tf.set_random_seed(0)
+np.random.seed(1)
+
+
 def rot_nms(filter_score, filter_quads, max_boxes, nms_thresh):
     max_score_idx = tf.argmax(filter_score)
     best_quad = filter_quads[max_score_idx]
@@ -18,23 +23,43 @@ def rot_nms(filter_score, filter_quads, max_boxes, nms_thresh):
     rot_y = tf.stack([tf.sin(angle), tf.cos(angle)], -1)
     rot_mat = tf.stack([rot_x, rot_y], -2)
     # rot_mat_repeat = tf.stack([rot_mat, rot_mat, rot_mat, rot_mat], -2)
-    rot_quads = tf.einsum('jk,lij->lik', rot_mat, temp_quads)
+    rot_quads = tf.einsum("jk,lij->lik", rot_mat, temp_quads)
     rot_quads = tf.reshape(rot_quads, [-1, 8])
     rot_boxes = tf.stack(
-        [tf.minimum(tf.minimum(rot_quads[..., 0], rot_quads[..., 2]), tf.minimum(rot_quads[..., 4], rot_quads[..., 6])),
-         tf.minimum(tf.minimum(rot_quads[..., 1], rot_quads[..., 3]), tf.minimum(rot_quads[..., 5], rot_quads[..., 7])),
-         tf.maximum(tf.maximum(rot_quads[..., 0], rot_quads[..., 2]), tf.maximum(rot_quads[..., 4], rot_quads[..., 6])),
-         tf.maximum(tf.maximum(rot_quads[..., 1], rot_quads[..., 3]),
-                    tf.maximum(rot_quads[..., 5], rot_quads[..., 7]))],
-        axis=-1)
+        [
+            tf.minimum(
+                tf.minimum(rot_quads[..., 0], rot_quads[..., 2]),
+                tf.minimum(rot_quads[..., 4], rot_quads[..., 6]),
+            ),
+            tf.minimum(
+                tf.minimum(rot_quads[..., 1], rot_quads[..., 3]),
+                tf.minimum(rot_quads[..., 5], rot_quads[..., 7]),
+            ),
+            tf.maximum(
+                tf.maximum(rot_quads[..., 0], rot_quads[..., 2]),
+                tf.maximum(rot_quads[..., 4], rot_quads[..., 6]),
+            ),
+            tf.maximum(
+                tf.maximum(rot_quads[..., 1], rot_quads[..., 3]),
+                tf.maximum(rot_quads[..., 5], rot_quads[..., 7]),
+            ),
+        ],
+        axis=-1,
+    )
 
-    nms_indices = tf.image.non_max_suppression(boxes=rot_boxes,
-                                               scores=filter_score,
-                                               max_output_size=max_boxes,
-                                               iou_threshold=nms_thresh, name='nms_indices')
+    nms_indices = tf.image.non_max_suppression(
+        boxes=rot_boxes,
+        scores=filter_score,
+        max_output_size=max_boxes,
+        iou_threshold=nms_thresh,
+        name="nms_indices",
+    )
     return nms_indices
 
-def gpu_nms(quads, scores, num_classes, max_boxes=50, score_thresh=0.5, nms_thresh=0.5, apply_rotate=True):
+
+def gpu_nms(
+    quads, scores, num_classes, max_boxes=50, score_thresh=0.5, nms_thresh=0.5, apply_rotate=True
+):
     """
     Perform NMS on GPU using TensorFlow.
 
@@ -49,18 +74,30 @@ def gpu_nms(quads, scores, num_classes, max_boxes=50, score_thresh=0.5, nms_thre
     """
 
     boxes_list, label_list, score_list, quads_list = [], [], [], []
-    max_boxes = tf.constant(max_boxes, dtype='int32')
+    max_boxes = tf.constant(max_boxes, dtype="int32")
 
     quads = tf.reshape(quads, [-1, 8])
     # boxes = tf.stack([tf.minimum(quads[..., 0],quads[..., 2]), tf.minimum(quads[..., 1],quads[..., 7]), tf.maximum(quads[..., 4],quads[..., 6]), tf.maximum(quads[..., 3],quads[..., 5])], axis=-1)
-    boxes = tf.stack([tf.minimum(tf.minimum(quads[..., 0],quads[..., 2]), tf.minimum(quads[..., 4],quads[..., 6])),
-                      tf.minimum(tf.minimum(quads[..., 1],quads[..., 3]), tf.minimum(quads[..., 5],quads[..., 7])),
-                      tf.maximum(tf.maximum(quads[..., 0],quads[..., 2]), tf.maximum(quads[..., 4],quads[..., 6])),
-                      tf.maximum(tf.maximum(quads[..., 1],quads[..., 3]), tf.maximum(quads[..., 5],quads[..., 7]))],
-                     axis=-1)
+    boxes = tf.stack(
+        [
+            tf.minimum(
+                tf.minimum(quads[..., 0], quads[..., 2]), tf.minimum(quads[..., 4], quads[..., 6])
+            ),
+            tf.minimum(
+                tf.minimum(quads[..., 1], quads[..., 3]), tf.minimum(quads[..., 5], quads[..., 7])
+            ),
+            tf.maximum(
+                tf.maximum(quads[..., 0], quads[..., 2]), tf.maximum(quads[..., 4], quads[..., 6])
+            ),
+            tf.maximum(
+                tf.maximum(quads[..., 1], quads[..., 3]), tf.maximum(quads[..., 5], quads[..., 7])
+            ),
+        ],
+        axis=-1,
+    )
     # boxes = tf.gather(quads, indices = [0, 1, 4, 5], axis=-1)
     # since we do nms for single image, then reshape it
-    boxes = tf.reshape(boxes, [-1, 4]) # '-1' means we don't konw the exact number of boxes
+    boxes = tf.reshape(boxes, [-1, 4])  # '-1' means we don't konw the exact number of boxes
     score = tf.reshape(scores, [-1, num_classes])
     labels = tf.argmax(score, axis=1)
     score = tf.reduce_max(score, axis=1)
@@ -73,27 +110,32 @@ def gpu_nms(quads, scores, num_classes, max_boxes=50, score_thresh=0.5, nms_thre
     mask = tf.greater_equal(score, tf.constant(score_thresh))
     # Step 2: Do non_max_suppression for each class
     # for i in range(num_classes):
-        # Step 3: Apply the mask to scores, boxes and pick them out
+    # Step 3: Apply the mask to scores, boxes and pick them out
     filter_labels = tf.boolean_mask(labels, mask)
     filter_boxes = tf.boolean_mask(boxes, mask)
     filter_score = tf.boolean_mask(score, mask)
     filter_quads = tf.boolean_mask(quads, mask)
 
     if apply_rotate:
-        nms_indices = tf.cond(tf.greater(tf.shape(filter_score)[0], 0),
-                              lambda:rot_nms(filter_score, filter_quads, max_boxes, nms_thresh),
-                              lambda:tf.image.non_max_suppression(boxes=filter_boxes,
-                                                       scores=filter_score,
-                                                       max_output_size=max_boxes,
-                                                       iou_threshold=nms_thresh, name='nms_indices')
-                              )
+        nms_indices = tf.cond(
+            tf.greater(tf.shape(filter_score)[0], 0),
+            lambda: rot_nms(filter_score, filter_quads, max_boxes, nms_thresh),
+            lambda: tf.image.non_max_suppression(
+                boxes=filter_boxes,
+                scores=filter_score,
+                max_output_size=max_boxes,
+                iou_threshold=nms_thresh,
+                name="nms_indices",
+            ),
+        )
     else:
-        nms_indices = tf.image.non_max_suppression(boxes=filter_boxes,
-                                                   scores=filter_score,
-                                                   max_output_size=max_boxes,
-                                                   iou_threshold=nms_thresh, name='nms_indices')
-
-
+        nms_indices = tf.image.non_max_suppression(
+            boxes=filter_boxes,
+            scores=filter_score,
+            max_output_size=max_boxes,
+            iou_threshold=nms_thresh,
+            name="nms_indices",
+        )
 
     label_list.append(tf.gather(filter_labels, nms_indices))
     boxes_list.append(tf.gather(filter_boxes, nms_indices))
@@ -162,18 +204,17 @@ def cpu_nms(boxes, scores, num_classes, max_boxes=50, score_thresh=0.5, iou_thre
     picked_boxes, picked_score, picked_label = [], [], []
 
     for i in range(num_classes):
-        indices = np.where(scores[:,i] >= score_thresh)
+        indices = np.where(scores[:, i] >= score_thresh)
         filter_boxes = boxes[indices]
-        filter_scores = scores[:,i][indices]
-        if len(filter_boxes) == 0: 
+        filter_scores = scores[:, i][indices]
+        if len(filter_boxes) == 0:
             continue
         # do non_max_suppression on the cpu
-        indices = py_nms(filter_boxes, filter_scores,
-                         max_boxes=max_boxes, iou_thresh=iou_thresh)
+        indices = py_nms(filter_boxes, filter_scores, max_boxes=max_boxes, iou_thresh=iou_thresh)
         picked_boxes.append(filter_boxes[indices])
         picked_score.append(filter_scores[indices])
-        picked_label.append(np.ones(len(indices), dtype='int32')*i)
-    if len(picked_boxes) == 0: 
+        picked_label.append(np.ones(len(indices), dtype="int32") * i)
+    if len(picked_boxes) == 0:
         return None, None, None
 
     boxes = np.concatenate(picked_boxes, axis=0)
