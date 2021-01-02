@@ -6,7 +6,7 @@ from algorithms.LaneDetector import LaneDetector
 
 
 class Car:
-    def __init__(self, config, env, parkingControl):
+    def __init__(self, config, env, laneDetector, parkingControl):
 
         self.width = 10
         self.height = 30
@@ -19,7 +19,7 @@ class Car:
         self.config = config
         self.env = env
 
-        self.laneDetector = LaneDetector(config)
+        self.laneDetector = laneDetector(config)
         self.curMode = None
 
     @property
@@ -61,7 +61,7 @@ class Car:
 
 
 def test():
-    car = Car(config, ParkingLot, ParkingControl)
+    car = Car(config, ParkingLot, LaneDetector, ParkingControl)
 
     car.park()
 
