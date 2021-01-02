@@ -107,15 +107,15 @@ python main.py
 
 ## Authors
 
-@brucekimork
+[brucekimork](https://github.com/brucekimrok)
 
-@hkh9715
+[hkh9715](https://github.com/hkh9715)
 
-@Hoyongpark
+[Hoyongpark](https://github.com/Hoyongpark)
 
-@kkaki19
+[kkaki19](https://github.com/kkaki19)
 
-@limaries30
+[limaries30](https://github.com/limaries30)
 
 
 
