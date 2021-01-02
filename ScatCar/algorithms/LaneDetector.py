@@ -8,19 +8,18 @@ from models.context_based.parking_slot_detector.psd_detect import detect_slot
 import config
 
 
-
 class LaneDetector:
     def __init__(self, config):
 
         self.config = config
 
-    def gaussian_blur(self, img: np.array, kernel_size: int):  # 가우시안 필터
+    def gaussian_blur(self, img: np.array, kernel_size: int):  # gaussian filter
         return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
 
     def cannyEdge_img(self, img, min_thresh=70, max_thresh=210):
         return cv2.Canny(img, min_thresh, max_thresh)
 
-    def weighted_img(self, img, initial_img, α=1, β=1.0, λ=0.0):  # 두 이미지 operlap 하기
+    def weighted_img(self, img, initial_img, α=1, β=1.0, λ=0.0):  # overlap image
         return cv2.addWeighted(initial_img, α, img, β, λ)
 
     def houghLines(self, img, rho, theta, threshold, min_line_len, max_line_gap):
@@ -52,7 +51,7 @@ class LaneDetector:
 
         return ROI_image
 
-    def detect_type(self, img):
+    def pcr_detect(self, img):
 
         parking_context_recognizer = get_model()
 
@@ -75,7 +74,7 @@ class LaneDetector:
 
         return type_predict, angle_predict
 
-    def slot_detect(self, result, img):
+    def psd_detect(self, result, img):
         img = img / 255
         type_predict, angle_predict = result
         weight_path = "models/context_based/weight_psd/fine_tuned_type_" + str(type_predict[0])
@@ -108,7 +107,7 @@ class LaneDetector:
 
 def test():
     print("lane detector test")
-    img_files = path.Path("./data").glob("*")
+    img_files = path.Path("./data/cut").glob("*")
     num_imgs = len(img_files)
     print("Total %d imgs" % num_imgs)
 
@@ -116,12 +115,15 @@ def test():
     laneDetector = LaneDetector(config)
 
     for idx, img in enumerate(imgs):
-        type_result = laneDetector.detect_type(img)
+        type_result = laneDetector.pcr_detect(img)
+        print(idx, "번째 pcr:", type_result)
         if type_result[0][0] == 3:
             print(idx, " th : no parking lot")
             continue
-        result, sess = laneDetector.slot_detect(type_result, img)
-        print(idx, "번째:", result)
+
+        # type_result = [[0], [0]]
+        result, sess = laneDetector.psd_detect(type_result, img)
+        print(idx, "번째 psd:", result)
         sess.close()
         tf.reset_default_graph()
 

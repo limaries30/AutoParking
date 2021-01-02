@@ -61,7 +61,6 @@ def detect_slot(
     )
 
     image_angle = tf.dtypes.cast(angle, tf.float32)
-
     y_pred = yolo_model.predict(pred_feature_maps, image_angle)
 
     saver_to_restore = tf.train.Saver()
