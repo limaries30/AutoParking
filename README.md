@@ -31,7 +31,7 @@ For detailed information about the project, please check the [report](./Report.p
 - 12V DC motor
 - TOF ultrasonic sensor
 
-<img src="./imgs/hardware.jpg" alt="img" style="zoom:40%;" />
+<img src="./imgs/hardware.jpg" alt="img" height="400px" />
 
 
 
@@ -65,14 +65,15 @@ For detailed information about the project, please check the [report](./Report.p
  After obtaining the bird view image from our test environment, the vacant parking slot could be detected with the context-based recognizer model.
 
 <table>
-      <tr align="center"><td> <img src="./imgs/test.jpg" alt="img" width="250px" height="500px"  ></td>
-    <td> <img src="./imgs/test_result.jpg" alt="img" width="250px" height="500px" ></td>
+      <tr align="center"><td> <img src="./imgs/test.jpg" alt="img" width="250px" height="400px"  ></td>
+    <td> <img src="./imgs/test_result.jpg" alt="img" width="250px" height="400px" ></td>
     </tr>
     <tr align="center">
     <td>Test Image</td>
     <td>Test Result Image</td>
     </tr>
 </table>
+
 
 
 
