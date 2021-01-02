@@ -14,7 +14,7 @@ This project has been performed under three objectives.
 
 
 
-For detailed information about the project, please check the [report](./Report.pdf) attached to this repository.
+For detailed information about the project, please check the [report](./Conceptualization on Autonomous Parking for Electric Vehicle Battery Charging_Final.pdf) attached to this repository.
 
 
 
@@ -93,7 +93,7 @@ For detailed information about the project, please check the [report](./Report.p
 
 You can just simply start the RaspberryPi car to park autonomously with this script.
 
-Still you need to have a context-based parking slot detector model which can be downloade from [here](https://github.com/dohoseok/context-based-parking-slot-detect)
+Still you need to have a context-based parking slot detector model which can be downloaded from [here](https://github.com/dohoseok/context-based-parking-slot-detect)
 
 Save the weights under **./ScatCar/models/context_based/weight_pcr** and **./ScatCar/models/context_based/weight_psd**
 
