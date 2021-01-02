@@ -1,0 +1,10 @@
+SHUFFLE_BUFFER = 1280
+BATCH_SIZE = 64
+NUM_CLASSES = 4
+EPOCHS = 50
+NUM_IMAGES = 402578
+STEPS_PER_EPOCH = int(NUM_IMAGES / BATCH_SIZE)
+INPUT_HEIGHT = 192
+INPUT_WIDTH = 64
+WEIGHT_FILE = "models/context_based/weight_pcr/trained/trained.ckpt"
+TEST_PATH = "../data/test"

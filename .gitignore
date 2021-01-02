@@ -3,4 +3,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*.ipynb
 *$py.class
+.vscode/
+Scatcar/weights/
+ScatCar/models/context_based/weight_pcr/
+ScatCar/models/context_based/weight_psd/

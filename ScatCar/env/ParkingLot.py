@@ -1,4 +1,4 @@
-class parkingLot:
+class ParkingLot:
     
     def __init__(self):
 
