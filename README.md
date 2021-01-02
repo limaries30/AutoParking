@@ -14,7 +14,7 @@ This project has been performed under three objectives.
 
 
 
-For detailed information about the project, please check the [report](./Conceptualization on Autonomous Parking for Electric Vehicle Battery Charging_Final.pdf) attached to this repository.
+For detailed information about the project, please check the [report](./report.pdf) attached to this repository.
 
 
 
